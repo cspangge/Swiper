@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World</title>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        .slide-enter{
+            opacity: 0
+        }
+        .slide-enter-to{
+            opacity: 1
+        }
+        .slide-enter-active, .slide-leave-active{
+            transition: opacity 2s;
+        }
+        .slide-leave{
+            opacity: 1;
+        }
+        .slide-leave-to{
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak></div>
+<!-- development version, includes helpful console warnings -->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    let base = {
+        data() {
+            return {
+                iconImg: {
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    cursor: "pointer"
+                },
+            }
+        }
+    };
+    Vue.prototype.slides = [
+        {
+            id: 1,
+            img: "./images/1.jpg",
+            isShow: true,
+            des: "Picture 1"
+        },
+        {
+            id: 2,
+            img: "./images/2.jpg",
+            isShow: false,
+            des: "Picture 2"
+        },
+        {
+            id: 3,
+            img: "./images/3.jpg",
+            isShow: false,
+            des: "Picture 3"
+        }
+    ];
+    let SwiperWrapComponent = {
+        template: `
+            <div :style="swiperWrap">
+                <transition-group name="slide">
+                    <div :style="swiperSlide" v-for="(item, index) in this.slides" v-show="item.isShow" :key="item.id-1">
+                        <img :style="swiperSlideImg" :src="item.img" alt="item.alt" />
+                    </div>
+                </transition-group>
+            </div>
+        `,
+        data() {
+            return {
+                swiperWrap: {
+                    width: "100%",
+                    height: "100%",
+                    // backgroundColor: "#000000",
+                },
+                swiperSlide: {
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    zIndex: "1",
+                    left: "0",
+                    top: "0",
+                },
+                swiperSlideImg: {
+                    width: "100%",
+                    height: "100%",
+                },
+                slides: this.slides,
+                timer: 5,
+                index: 0,
+            }
+        },
+        methods: {
+            autoRun() {
+                this.slides.forEach(elem => {
+                    elem.isShow = false;
+                });
+                if (this.index === this.slides.length) {
+                    this.index = 0;
+                }
+                this.slides[this.index++].isShow = true;
+            }
+        },
+        mounted() {
+            //setInterval(this.autoRun, this.timer * 1000);
+        },
+    };
+    let SwiperPaginationComponent = {
+        template: `
+            <div :style="swiperPagination">
+                <div :style="[pageItem, item.isShow ? activeItem : inactiveItem]" v-for="(item, index) in this.slides" :key="index" @click="changeSwiper(index)"></div>
+            </div>
+        `,
+        data() {
+            return {
+                swiperPagination: {
+                    width: "auto",
+                    height: "auto",
+                    position: "absolute",
+                    zIndex: "2",
+                    left: "50%",
+                    bottom: "5%",
+                    transform: "translateX(-50%)",
+                    webkitTransform: "translateX(-50%)",
+                    whiteSpace: "nowrap",
+                    textAlign: "center",
+                    backgroundColor: "rgba(255,255,255,.3)",
+                    borderRadius: "10px",
+                },
+                pageItem: {
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    cursor: "pointer",
+                    display: "inline-block",
+                    marginRight: "2.5px",
+                    marginLeft: "2.5px",
+                },
+                activeItem: {
+                    backgroundColor: "rgb(255,80,0,0.8)"
+                },
+                inactiveItem: {
+                    backgroundColor: "rgb(255,255,255,0.8)",
+                },
+                slides: this.slides,
+            }
+        },
+        methods: {
+            changeSwiper(index) {
+                this.slides.forEach(elem => {
+                    elem.isShow = false;
+                });
+                this.slides[index].isShow = true;
+            }
+        }
+    };
+    let SwiperPrevButtonComponent = {
+        template: `
+            <div :style="swiperButtonPrev">
+                <img src="./images/arrow_left.png" :style="iconImg" @click="changeSwiper()" alt="Previous Image" />
+            </div>
+        `,
+        data() {
+            return {
+                swiperButtonPrev: {
+                    width: "35px",
+                    height: "35px",
+                    position: "absolute",
+                    zIndex: "2",
+                    left: "0",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    webkitTransform: "translateY(-50%)",
+                    backgroundColor: "rgba(255,255,255,.4)",
+                },
+                slides: this.slides,
+            }
+        },
+        mixins: [base],
+        methods: {
+            changeSwiper() {
+                let index = 0;
+                this.slides.forEach(elem => {
+                    if (elem.isShow) index = elem.id - 2;
+                    if (index < 0) index = this.slides.length - 1;
+                });
+                this.slides.forEach(elem => {
+                    elem.isShow = false;
+                });
+                this.slides[index].isShow = true;
+            }
+        }
+    };
+    let SwiperNextButtonComponent = {
+        template: `
+            <div :style="swiperButtonNext">
+                <img src="./images/arrow_right.png" :style="iconImg" @click="changeSwiper()" alt="Next Image" />
+            </div>
+        `,
+        data() {
+            return {
+                swiperButtonNext: {
+                    width: "35px",
+                    height: "35px",
+                    position: "absolute",
+                    zIndex: "2",
+                    right: "0",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    webkitTransform: "translateY(-50%)",
+                    backgroundColor: "rgba(255,255,255,.4)",
+                },
+            }
+        },
+        mixins: [base],
+        methods: {
+            changeSwiper() {
+                let index = 0;
+                this.slides.forEach(elem => {
+                    if (elem.isShow) index = elem.id;
+                    if (index === this.slides.length) index = 0;
+                });
+                this.slides.forEach(elem => {
+                    elem.isShow = false;
+                });
+                this.slides[index].isShow = true;
+            }
+        }
+    };
+
+    let SwiperComponent = {
+        template: `
+            <div :style="swiperContainer">
+                <SwiperWrapComponent></SwiperWrapComponent>
+                <SwiperPaginationComponent></SwiperPaginationComponent>
+                <SwiperPrevButtonComponent></SwiperPrevButtonComponent>
+                <SwiperNextButtonComponent></SwiperNextButtonComponent>
+            </div>
+        `,
+        data() {
+            return {
+                swiperContainer: {
+                    width: "520px",
+                    height: "280px",
+                    position: "relative",
+                    zIndex: "1",
+                    // backgroundColor: "#000000",
+                },
+            }
+        },
+        components: {
+            SwiperWrapComponent,
+            SwiperPaginationComponent,
+            SwiperPrevButtonComponent,
+            SwiperNextButtonComponent
+        }
+    };
+    let App = {
+        template: `
+            <SwiperComponent></SwiperComponent>
+        `,
+        components: {
+            SwiperComponent: SwiperComponent
+        }
+    };
+
+    new Vue({
+        el: "#app",
+        template: `
+            <div>
+                <App></App>
+            </div>
+        `,
+        components: {
+            App: App
+        }
+    });
+</script>
+</body>
+</html>
